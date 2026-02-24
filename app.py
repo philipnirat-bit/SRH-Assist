@@ -1,0 +1,50 @@
+import streamlit as st
+from chat_logic import model
+import os
+
+st.set_page_config(page_title="SRH Assist", layout="wide")
+
+st.title("SRH Assist")
+st.caption("Educational information on sexual & reproductive health • Not medical advice")
+
+DISCLAIMER = """
+**Important**: I am **not** a doctor or healthcare provider.  
+All information here is general and educational only — **not** a substitute for professional medical advice, diagnosis, or treatment.  
+For personal concerns, please speak to a qualified healthcare professional or trusted clinic.
+"""
+
+st.info(DISCLAIMER, icon="⚠️")
+
+# ── Session state for chat history ──
+if "messages" not in st.session_state:
+    st.session_state.messages = [
+        {"role": "assistant", "content": "Hello! I'm here to provide factual, educational information about sexual and reproductive health topics such as puberty, periods, contraception, STIs, consent, and more.\n\n" + DISCLAIMER}
+    ]
+print(os.getenv("GEMINI_API_KEY"))
+
+# Display chat history
+for msg in st.session_state.messages:
+    with st.chat_message(msg["role"]):
+        st.markdown(msg["content"])
+
+# User input
+if prompt := st.chat_input("Ask a question about sexual and reproductive health…"):
+    st.session_state.messages.append({"role": "user", "content": prompt})
+    with st.chat_message("user"):
+        st.markdown(prompt)
+
+    with st.chat_message("assistant"):
+        with st.spinner("Thinking…"):
+            chat = model.start_chat(history=[
+                {"role": m["role"], "parts": [m["content"]]}
+                for m in st.session_state.messages[:-1]   # exclude current user message
+            ])
+            try:
+                response = chat.send_message(prompt, stream=False)
+                full_response = response.text
+            except Exception as e:
+                full_response = f"Sorry, I encountered an issue: {str(e)}\nPlease try rephrasing or ask another question."
+
+        st.markdown(full_response)
+
+    st.session_state.messages.append({"role": "assistant", "content": full_response})
