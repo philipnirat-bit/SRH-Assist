@@ -4,6 +4,14 @@ import os
 
 st.set_page_config(page_title="SRH Assist", layout="wide")
 
+with st.sidebar:
+    st.header("Controls")
+    if st.button("Clear conversation"):
+        st.session_state.messages = []
+        st.rerun()
+
+
+
 st.title("SRH Assist")
 st.caption("Educational information on sexual & reproductive health • Not medical advice")
 
@@ -34,6 +42,7 @@ if prompt := st.chat_input("Ask a question about sexual and reproductive health�
         st.markdown(prompt)
 
     with st.chat_message("assistant"):
+        
         with st.spinner("Thinking…"):
             chat = model.start_chat(history=[
                 {"role": m["role"], "parts": [m["content"]]}
