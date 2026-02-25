@@ -1,0 +1,13 @@
+# filepath: /workspaces/SRH-Assist/render.yaml
+services:
+  - type: web
+    name: srh-assist
+    env: python
+    plan: free             # change to a paid plan if you wish
+    region: oregon         # choose a region
+    buildCommand: pip install -r requirements.txt
+    startCommand: |
+      streamlit run app.py \
+        --server.enableCORS false \
+        --server.enableXsrfProtection false
+    autoDeploy: true       # rebuild on every push to main
